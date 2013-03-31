@@ -10,10 +10,13 @@ I want to email my customers that have used my service for a few weeks and then 
 
 We are not ditching KissMetrics but Customer.io relies on it's own event system so I needed a way to import my old metrics. I used the export service from KissMetrics which will dump hundreds of JSON files to a S3 bucket of your choice. It will take some hours on the first time but after that they will keep the bucket updated every few hours.
 
+### Step 0: KissMetrics to Customer.io Migration Class
+
+<a href="https://github.com/knokio/kissmetrics-to-customerio" target="_blank"><button>Github Repository</button></a>
+
 ### Step 1: Export the KissMetrics data
 
-This step is simple and KissMetrics has a simple guide: [link for kissmetrics export]
-Follow this steps and come back for the next step.
+This step is simple and KissMetrics has a simple guide: [Follow this steps and come back for the next step.](http://support.kissmetrics.com/apis/data/)
 
 ### Step 2: Export your users
 
@@ -38,14 +41,6 @@ This process will take a few minutes to hours depending on your userbase.
 
 	require("kissmetrics-to-customerio.php");
 	
-<<<<<<< HEAD
-	$attributes = array('name' => $name, 'country' => $country);
-	
-	try {
-		create_customer($id, $email, $createdAt, $attributes);
-	} catch (Exception $ex) {
-		echo $ex->getMessage();
-=======
 	$csvFile = file_get_contents('users-dump.csv');
 	
 	foreach (explode("\n", $csvFile) as $row)
@@ -64,7 +59,6 @@ This process will take a few minutes to hours depending on your userbase.
 		} catch (Exception $ex) {
 			echo $ex->getMessage();
 		}
->>>>>>> Updated code
 	}
 
 
@@ -157,4 +151,10 @@ Just add this piece of code:
 
 ### Conclusion
 
-This guide may seem big but you can do this process in a few hours. If you have any doubt just tweet or send me an email: diogo at knokio dot com.
+This guide may seem big but you can do this process in a few hours. If you have any doubt just tweet or send me an email: diogoepf at icloud dot com.
+
+### Links
+
+- [Migration Repository Code](https://github.com/knokio/kissmetrics-to-customerio)
+- [Export KissMetrics Data](http://support.kissmetrics.com/apis/data/)
+- [Customer.io API Docs](http://customer.io/docs/api/rest.html)
