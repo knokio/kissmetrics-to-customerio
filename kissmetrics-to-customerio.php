@@ -4,9 +4,6 @@
 
 	date_default_timezone_set('Europe/Lisbon');
 
-	define('SITE_ID', 'xxxxx');
-	define('API_KEY', 'yyyyy');
-
 	function create_customer($customer_id, $email, $created_at, $attributes)
 	{
 		$customerio_url = 'https://app.customer.io/api/v1/customers/' . $customer_id;
@@ -23,13 +20,15 @@
 		curl_setopt($session, CURLOPT_CUSTOMREQUEST, 'PUT');
 		curl_setopt($session, CURLOPT_VERBOSE, 0);
 		curl_setopt($session, CURLOPT_POSTFIELDS,http_build_query($data));
-		curl_setopt($session, CURLOPT_USERPWD, SITE_ID . ":" . API_KEY);
+		curl_setopt($session, CURLOPT_USERPWD, SITE_ID . ":2" . API_KEY);
 		curl_setopt($session, CURLOPT_SSL_VERIFYPEER,false);
 
 		$response = curl_exec($session);
-		echo $response;
 
-		echo "Created customer $customer_id" . PHP_EOL;
+		if (curl_getinfo($session, CURLINFO_HTTP_CODE) != 200)
+		{
+			throw new Exception($response);
+		}
 
 		curl_close($session);
 	}
@@ -52,7 +51,11 @@
 		if(ereg("^(https)",$request)) curl_setopt($session,CURLOPT_SSL_VERIFYPEER,false);
 
 		$response = curl_exec($session); 
-		echo $response;
+
+		if (curl_getinfo($session, CURLINFO_HTTP_CODE) != 200)
+		{
+			throw new Exception($response);
+		}
 
 		curl_close($session);
 	}
@@ -78,9 +81,11 @@
 		curl_setopt($session,CURLOPT_SSL_VERIFYPEER,false);
 
 		$response = curl_exec($session);
-		echo $response;
 
-		echo "Added event to $customer_id: $name" . PHP_EOL;
+		if (curl_getinfo($session, CURLINFO_HTTP_CODE) != 200)
+		{
+			throw new Exception($response);
+		}
 
 		curl_close($session);
 	}

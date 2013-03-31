@@ -21,62 +21,72 @@ Before you start sending the events to Customer.io you need to create the custom
 
 The required fields are: user id, email, name and creation date. You can add other properties you might find useful - probabily those you were already using on KissMetrics: type of plan or country. 
 
-````
-23123, "John Doe", "johndoe@dispostable.com", "2012-11-23", "Portugal"
-...
-````
+	23123, "John Doe", "johndoe@dispostable.com", "2012-11-23", "Portugal"
+	...
+
 
 ### Step 3: Import your users
 
-Feed each user to __create_customer(id, email, name, createdAt, attributes)__
+Feed each user to __create_customer(id, email, createdAt, attributes)__
 
 This process will take a few minutes to hours depending on your userbase.
 
-````
-require("kissmetrics-to-customerio.php");
+	error_reporting(-1);
 
-$csvFile = file_get_contents('users-dump.csv');
+	define('SITE_ID', 'xxxx');
+	define('API_KEY', 'yyyy');
 
-foreach (explode("\n", $csvFile) as $row)
-{
-	$data		= str_getcsv($row);
-	$id			= $data[0];
-	$name		= $data[1];
-	$email		= $data[2];
-	$createdAt	= strtotime($data[3]);
-	$country	= $data[4];
+	require("kissmetrics-to-customerio.php");
 	
+<<<<<<< HEAD
 	$attributes = array('name' => $name, 'country' => $country);
 	
 	try {
 		create_customer($id, $email, $createdAt, $attributes);
 	} catch (Exception $ex) {
 		echo $ex->getMessage();
+=======
+	$csvFile = file_get_contents('users-dump.csv');
+	
+	foreach (explode("\n", $csvFile) as $row)
+	{
+		$data		= str_getcsv($row);
+		$id			= $data[0];
+		$name		= $data[1];
+		$email		= $data[2];
+		$createdAt	= strtotime($data[3]);
+		$country	= $data[4];
+		
+		$attributes = array('name' => $name, 'country' => $country);
+		
+		try {
+			create_customer($id, $email, $createdAt, $attributes);
+		} catch (Exception $ex) {
+			echo $ex->getMessage();
+		}
+>>>>>>> Updated code
 	}
-}
-````
+
 
 ### Step 4: Collect your events
 
 After you imported all your users the S3 bucket should be filled with the juicy content of all your KissMetrics events. The number of files can be overwhelming. They export hundreds of small files each containing several one-liners with JSON; we will need to compact it into one to facilitate the import process. Example:
 
-```
-{"platform":"iphone","_n":"login","_p":"12312","_t":1352317082}
-{"platform":"web","_n":"login","_p":"2221321","_t":1352316831}
-{"platform":"web","_n":"login","_p":"112123","_t":1352317100}
-```
+
+	{"platform":"iphone","_n":"login","_p":"12312","_t":1352317082}
+	{"platform":"web","_n":"login","_p":"2221321","_t":1352316831}
+	{"platform":"web","_n":"login","_p":"112123","_t":1352317100}
+
 
 First sync the S3 bucket with a local directory:
 
-```
-s3cmd sync s3://kissmetrics-export-bucket km-export
-```
+	s3cmd sync s3://kissmetrics-export-bucket km-export
 
 Compact all the JSON files into one:
 
-```
-cat km-export/*.json > km-data.json
-```
+
+	cat km-export/*.json > km-data.json
+
 
 
 ### Step 5: Import your events
@@ -85,33 +95,35 @@ Feed each event to __track_event(userId, name, timestamp, attributes)__
 
 This process will take a few hours depending on the volume of events.
 
-````
-require("kissmetrics-to-customerio.php");
+	define('SITE_ID', 'xxxx');
+	define('API_KEY', 'yyyy');
 
-$eventsFile = file_get_contents('km-data.json');
-
-foreach (explode("\n", $eventsFile) as $row)
-{
-	$data		= json_decode($row, true);
-
-	$userId      = $data['_p'];
-	$name        = $data['_n'];
-	$timestamp   = $data['_t'];
+	require("kissmetrics-to-customerio.php");
 	
-	unset($data['_p']);
-	unset($data['_n']);
-	unset($data['_t']);
+	$eventsFile = file_get_contents('km-data.json');
 	
-	// After unsetting _p, _n and _t, the remaining are event properties
-	$attributes = $data;
+	foreach (explode("\n", $eventsFile) as $row)
+	{
+		$data		= json_decode($row, true);
 	
-	try {
-		track_event($userId, $name, $timestamp, $attributes);
-	} catch (Exception $ex) {
-		echo $ex->getMessage();
+		$userId      = $data['_p'];
+		$name        = $data['_n'];
+		$timestamp   = $data['_t'];
+		
+		unset($data['_p']);
+		unset($data['_n']);
+		unset($data['_t']);
+		
+		// After unsetting _p, _n and _t, the remaining are event properties
+		$attributes = $data;
+		
+		try {
+			track_event($userId, $name, $timestamp, $attributes);
+		} catch (Exception $ex) {
+			echo $ex->getMessage();
+		}
 	}
-}
-````
+
 
 ### Step 6: Wait
 
@@ -126,23 +138,22 @@ If you have a huge amount of data - a few months or even years - you can acceler
 Just add this piece of code:
 
 
-````
+	
+	$eventsSince = strtotime('-30 days');
+	
+	foreach (explode("\n", $eventsFile) as $row)
+	{
+		$data		= json_decode($row, true);
+	
+		$userId      = $data['_p'];
+		$name        = $data['_n'];
+		$timestamp   = $data['_t'];
+	
+		if ($timestamp < $eventsSince) continue;
+	
+		…
+	}
 
-$eventsSince = strtotime('-30 days');
-
-foreach (explode("\n", $eventsFile) as $row)
-{
-	$data		= json_decode($row, true);
-
-	$userId      = $data['_p'];
-	$name        = $data['_n'];
-	$timestamp   = $data['_t'];
-
-	if ($timestamp < $eventsSince) continue;
-
-	…
-}
-````
 
 ### Conclusion
 
