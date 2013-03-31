@@ -46,10 +46,10 @@ foreach (explode("\n", $csvFile) as $row)
 	$createdAt	= strtotime($data[3]);
 	$country	= $data[4];
 	
-	$attributes = array('country' => $country);
+	$attributes = array('name' => $name, 'country' => $country);
 	
 	try {
-		create_customer($id, $email, $name, $createdAt, $attributes);
+		create_customer($id, $email, $createdAt, $attributes);
 	} catch (Exception $ex) {
 		echo $ex->getMessage();
 	}
